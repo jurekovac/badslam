@@ -51,6 +51,14 @@ void BilateralFilteringAndDepthCutoffCUDA(
     const CUDABuffer_<u16>& input_depth,
     CUDABuffer_<u16>* output_depth);
 
+// Removes depth values larger
+// than max_depth and sets 0 to unknown
+void DepthCutoffCUDA(
+    cudaStream_t stream,
+    u16 max_depth,
+    const CUDABuffer_<u16>& input_depth,
+    CUDABuffer_<u16>* output_depth);
+
 // Estimates normal vectors for pixels of a depth image using centered finite
 // differences. If not all 4-neighbors have a depth value for a given pixel, it
 // is discarded (i.e., removed from the depth image).

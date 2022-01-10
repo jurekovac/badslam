@@ -31,11 +31,13 @@
 
 #include "libvis/cuda/cuda_util.h"
 
+#include "stdio.h"
+
 namespace vis {
 
 template <typename T>
-CUDABuffer<T>::CUDABuffer(int height, int width)
-    : data_(0, height, width, 0) {
+CUDABuffer<T>::CUDABuffer(int height, int width, bool wrapper)
+    : data_(0, height, width, 0), wrapper_(wrapper) {
   CUDA_CHECKED_CALL(cudaMallocPitch(&data_.address_, &data_.pitch_,
                                     data_.width_ * sizeof(T), data_.height_));
   // if (data_.pitch_ != data_.width_ * sizeof(T)) {
@@ -49,7 +51,9 @@ CUDABuffer<T>::CUDABuffer(int height, int width)
 
 template <typename T>
 CUDABuffer<T>::~CUDABuffer() {
-  CUDA_CHECKED_CALL(cudaFree(reinterpret_cast<void*>(data_.address_)));
+  if (!wrapper_) {
+    CUDA_CHECKED_CALL(cudaFree(reinterpret_cast<void*>(data_.address_)));
+  }
 }
 
 template <typename T>

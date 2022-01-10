@@ -691,9 +691,9 @@ void DirectBA::BundleAdjustmentAlternating(
     
     // --- CONVERGENCE ---
     if (iteration >= min_iterations - 1 &&
-        (num_converged == keyframes_.size() || !optimize_poses)) {
+      (num_converged == keyframes_.size() /*|| !optimize_poses*/)) {
       // All frames are inactive. Early exit.
-//       LOG(INFO) << "Early global BA exit after " << (iteration + 1) << " iterations";
+      LOG(INFO) << "Early global BA exit after " << (iteration + 1) << " iterations";
       if (converged) {
         *converged = true;
       }

@@ -111,13 +111,21 @@ Keyframe::Keyframe(
   // Perform depth image preprocessing.
   CUDABuffer<u16> depth_buffer(depth_image.height(), depth_image.width());
   depth_buffer_.UploadAsync(stream, depth_image);
+
+  // FIX: this must be run prior other preprocessing. Since it also marks invalid depths as 65536
+  // which is required by ComputeNormalsCUDA. Otherwise this was done BilateralFilteringAndDepthCutoffCUDA.
+  DepthCutoffCUDA(
+      stream,
+      3.0f /  depth_params.raw_to_float_depth,
+      depth_buffer_.ToCUDA(),
+      &depth_buffer.ToCUDA());
   
   ComputeNormalsCUDA(
       stream,
       CreatePixelCenterUnprojector(depth_camera),
       depth_params,
       depth_buffer_.ToCUDA(),
-      &depth_buffer.ToCUDA(),
+      &depth_buffer_.ToCUDA(),
       &normals_buffer_.ToCUDA());
   
   CUDABufferPtr<float> min_max_depth_init_buffer_;
