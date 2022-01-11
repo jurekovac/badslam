@@ -2,6 +2,9 @@ if (CMAKE_CUDA_COMPILER)
   # Make CMake find the Find<Package>.cmake files in the cmake subdirectory.
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
   
+  set(DLib_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/DLib/lib/cmake/DLib")
+  set(opengv_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/opengv/lib/cmake/opengv-1.0")
+
   # Dependencies
   find_package(SuiteSparse REQUIRED)
   find_package(DLib REQUIRED)
@@ -57,6 +60,7 @@ if (CMAKE_CUDA_COMPILER)
     ${BAD_SLAM_SRC}
   )
   set_property(TARGET badslam_baselib PROPERTY FOLDER "badslam")
+  #set_property(TARGET badslam_baselib PROPERTY CUDA_ARCHITECTURES 75)
   target_compile_options(badslam_baselib
     PUBLIC
       ${LIBVIS_WARNING_OPTIONS}
