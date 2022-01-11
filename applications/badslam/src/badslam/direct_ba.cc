@@ -88,7 +88,9 @@ DirectBA::DirectBA(
     bool use_depth_residuals,
     bool use_descriptor_residuals,
     shared_ptr<BadSlamRenderWindow> render_window,
-    const SE3f& global_T_anchor_frame)
+    const SE3f& global_T_anchor_frame,
+    float convergence_translation_threshold,
+    float convergence_rotation_threshold)
     : color_camera_(color_camera_initial_estimate),
       pyramid_level_for_color_(pyramid_level_for_color),
       depth_camera_(depth_camera_initial_estimate),
@@ -104,7 +106,9 @@ DirectBA::DirectBA(
                                  ((depth_camera_.height() - 1) / sparse_surfel_cell_size + 1),
           /*a_rows*/ 4 + 1),
       render_window_(render_window),
-      global_T_anchor_frame_(global_T_anchor_frame) {
+      global_T_anchor_frame_(global_T_anchor_frame),
+      convergence_translation_threshold_(convergence_translation_threshold),
+      convergence_rotation_threshold_(convergence_rotation_threshold) {
   depth_params_.a = 0;
   cfactor_buffer_.reset(new CUDABuffer<float>(
       (depth_camera_.height() - 1) / sparse_surfel_cell_size + 1,

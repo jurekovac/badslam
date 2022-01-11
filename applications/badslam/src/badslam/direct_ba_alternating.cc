@@ -228,7 +228,7 @@ repeat_pose_estimation:;
     }
     
     // Check for convergence
-    converged = IsScale1PoseEstimationConverged(x);
+    converged = IsScale1PoseEstimationConverged(x, convergence_translation_threshold_, convergence_rotation_threshold_);
     if (!gather_convergence_samples_ && converged) {
       if (kDebug) {
         LOG(INFO) << "Debug: Assuming convergence.";
@@ -560,7 +560,7 @@ void DirectBA::BundleAdjustmentAlternating(
                           &global_T_frame_estimate,
                           true);
         SE3f pose_difference = keyframe->frame_T_global() * global_T_frame_estimate;
-        bool frame_moved = !IsScale1PoseEstimationConverged(pose_difference.log());
+        bool frame_moved = !IsScale1PoseEstimationConverged(pose_difference.log(), convergence_translation_threshold_, convergence_rotation_threshold_);
         
         Lock();
         keyframe->set_global_T_frame(global_T_frame_estimate);
