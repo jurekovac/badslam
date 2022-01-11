@@ -60,7 +60,7 @@ if (CMAKE_CUDA_COMPILER)
     ${BAD_SLAM_SRC}
   )
   set_property(TARGET badslam_baselib PROPERTY FOLDER "badslam")
-  #set_property(TARGET badslam_baselib PROPERTY CUDA_ARCHITECTURES 75)
+  set_property(TARGET badslam_baselib PROPERTY CUDA_ARCHITECTURES 75)
   target_compile_options(badslam_baselib
     PUBLIC
       ${LIBVIS_WARNING_OPTIONS}

@@ -460,6 +460,7 @@ if (CMAKE_CUDA_COMPILER)
     libvis/src/libvis/cuda/pixel_corner_projector.h
   )
   set_property(TARGET libvis_cuda PROPERTY FOLDER "libvis")
+  set_property(TARGET libvis_cuda PROPERTY CUDA_ARCHITECTURES 75)
   target_include_directories(libvis_cuda PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     ${OpenCV_INCLUDE_DIRS}
