@@ -1,5 +1,28 @@
 # BAD SLAM #
 
+## CadStar Notes ##
+
+1. install vcpkg dependencies: 
+- suitesparse
+- g2o
+- glew
+- opengl
+
+2. clone badslam repository. Checkout branch _feat_gpu_global_alignment_
+3. run cmake:
+``` 
+# cd CSBadSlam
+# mkdir build
+# cd build
+# cmake -DCMAKE_TOOLCHAIN_FILE="<path_to_vcpkg_root>/scripts/buildsystems/vcpkg.cmake" .. 
+```
+4. build from vscode
+
+NOTE: external dependencies that were missing in vcpkg and were added to the repo third_party:
+  - DLib: https://github.com/dorian3d/DLib.git (prebuild added to applications/badslam/third_party\DLib)
+  - opengv: https://github.com/laurentkneip/opengv.git (prebuild added to applications/badslam/third_party\opengv)
+
+
 ## Overview ##
 
 BAD SLAM is a real-time approach for Simultaneous Localization and Mapping (SLAM) for RGB-D cameras.
