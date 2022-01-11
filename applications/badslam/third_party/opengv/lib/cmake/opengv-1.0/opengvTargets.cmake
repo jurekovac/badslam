@@ -54,7 +54,7 @@ endif()
 add_library(opengv STATIC IMPORTED)
 
 set_target_properties(opengv PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;C:/Repos/vcpkg/installed/x64-windows/include/eigen3;C:/Repos/vcpkg/installed/x64-windows/include/eigen3/unsupported;${_IMPORT_PREFIX}/include"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
 )
 
 # Load information for each installed configuration.
