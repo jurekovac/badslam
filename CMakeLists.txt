@@ -156,7 +156,7 @@ if (TARGET Qt5::Core AND UNIX)
 endif()
 
 # OpenCV (external, required)
-find_package(OpenCV 3.1.0 REQUIRED)
+find_package(OpenCV 4.5.1 REQUIRED)
 
 # Settings.
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUXX)
@@ -460,6 +460,7 @@ if (CMAKE_CUDA_COMPILER)
     libvis/src/libvis/cuda/pixel_corner_projector.h
   )
   set_property(TARGET libvis_cuda PROPERTY FOLDER "libvis")
+  set_property(TARGET libvis_cuda PROPERTY CUDA_ARCHITECTURES 75)
   target_include_directories(libvis_cuda PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     ${OpenCV_INCLUDE_DIRS}

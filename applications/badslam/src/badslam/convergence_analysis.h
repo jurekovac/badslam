@@ -42,9 +42,9 @@ void RunConvergenceAnalysis(const std::string& convergence_file_path);
 
 // Attempts to determine whether direct pose estimation is converged based on
 // the pose update x.
-inline bool IsScale1PoseEstimationConverged(const Eigen::Matrix<float, 6, 1>& x) {
-  constexpr float translation_threshold = 1e-06;
-  constexpr float rotation_threshold = 1e-07;
+inline bool IsScale1PoseEstimationConverged(const Eigen::Matrix<float, 6, 1>& x, float translation_threshold = 1e-06, float rotation_threshold = 1e-07) {
+  // constexpr float translation_threshold = 1e-06;
+  // constexpr float rotation_threshold = 1e-07;
   // Scale the rotation part to the translation scale and then use the translation criterion on the whole vector norm.
   Eigen::Matrix<float, 6, 1> scaled_x = x;
   scaled_x.bottomRows<3>() *= translation_threshold / rotation_threshold;
