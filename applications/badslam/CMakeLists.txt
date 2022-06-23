@@ -5,6 +5,8 @@ if (CMAKE_CUDA_COMPILER)
   set(DLib_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/DLib/lib/cmake/DLib")
   set(opengv_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/opengv/lib/cmake/opengv-1.0")
 
+  set(WITH_REALSENSE ON CACHE BOOL "Enable Realsense2 Support")
+  set(WITH_K4A ON CACHE BOOL "Enable Kinect4Azure Support")
   # Dependencies
   find_package(SuiteSparse REQUIRED)
   find_package(DLib REQUIRED)
@@ -25,19 +27,21 @@ if (CMAKE_CUDA_COMPILER)
   find_package(opengv REQUIRED)
   
   # Optional, only required for live RealSense camera support
-  find_package(realsense2)
-
-  # Optional, only required for live Azure Kinect camera support
-  if (WIN32)
-    # Use a custom find script in the cmake subdirectory since the K4A SDK does
-    # not seem to ship cmake files on Windows
-    find_package(K4A)
-  else()
-    # On Linux, use the SDK-provided CMake files
-    find_package(k4a)
-    find_package(k4arecord)
+  if(WITH_REALSENSE)
+	find_package(realsense2)
   endif()
-  
+  # Optional, only required for live Azure Kinect camera support
+  if(WITH_K4A)
+	  if (WIN32)
+		# Use a custom find script in the cmake subdirectory since the K4A SDK does
+		# not seem to ship cmake files on Windows
+		find_package(K4A)
+	  else()
+		# On Linux, use the SDK-provided CMake files
+		find_package(k4a)
+		find_package(k4arecord)
+	  endif()
+  endif()
   # Optional, only required for live Structure Core camera support
   find_package(Structure)
 
