@@ -49,7 +49,7 @@ class CUDABuffer {
   typedef T Type;
 
   // Allocates a new CUDA buffer with the given size and undefined content.
-  CUDABuffer(int height, int width);
+  CUDABuffer(int height, int width, bool wrapper = false);
   
   // Disallow copying.
   CUDABuffer(const CUDABuffer<T>&) = delete;
@@ -126,6 +126,7 @@ class CUDABuffer {
  private:
   // Data that will be passed to CUDA code.
   CUDABuffer_<T> data_;
+  bool wrapper_ = false;
 };
 
 template <typename T>

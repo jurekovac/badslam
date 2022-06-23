@@ -85,7 +85,9 @@ class DirectBA {
       bool use_depth_residuals,
       bool use_descriptor_residuals,
       shared_ptr<BadSlamRenderWindow> render_window,
-      const SE3f& global_T_anchor_frame);
+      const SE3f& global_T_anchor_frame, 
+      float convergence_translation_threshold = 1e-06,
+      float convergence_rotation_threshold = 1e-07);
   
   // Destructor.
   ~DirectBA();
@@ -493,7 +495,10 @@ class DirectBA {
   int min_observation_count_;
   
   float surfel_merge_dist_factor_;
-  
+
+  float convergence_translation_threshold_ = 1e-06;
+  float convergence_rotation_threshold_ = 1e-07;
+
   // Temporary CUDA buffers.
   void* new_surfels_temp_storage_;
   usize new_surfels_temp_storage_bytes_;
