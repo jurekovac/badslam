@@ -44,6 +44,10 @@
 #include "badslam/util.cuh"
 #include "badslam/util.h"
 
+#include <synchapi.h>
+#include <Windows.h>
+
+
 namespace vis {
 
 BadSlam::BadSlam(
