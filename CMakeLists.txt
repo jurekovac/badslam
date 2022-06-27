@@ -349,7 +349,8 @@ add_library(libvis SHARED
 set_property(TARGET libvis PROPERTY FOLDER "libvis")
 
 target_compile_options(libvis PRIVATE
-  "${LIBVIS_WARNING_OPTIONS}"
+	"${LIBVIS_WARNING_OPTIONS}"
+  	$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
 )
 if (VULKAN_FOUND)
   target_compile_options(libvis PUBLIC -DLIBVIS_HAVE_VULKAN)
@@ -474,6 +475,7 @@ if (CMAKE_CUDA_COMPILER)
   target_compile_options(libvis_cuda PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>
     $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+	$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
   )
 endif()
 
@@ -504,6 +506,9 @@ target_link_libraries(libvis_test PRIVATE
   Threads::Threads
   libvis
   cublas  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
+)
+target_compile_options(libvis_test PRIVATE
+	$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
 )
 target_include_directories(libvis_test PRIVATE
   ${gtest_SOURCE_DIR}/include

@@ -4,6 +4,16 @@ cd %~dp0
 set MYPATH=%CD%
 echo.
 
+rem https://github.com/facebookresearch/pytorch3d/issues/1227
+rem https://github.com/NVIDIA/cub/tree/1.16.X
+
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
+
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\CUDA\v11.6" /v InstallDir
+if %ERRORLEVEL% EQU 0 goto CUDA_11_6_VAR_INSTALLED
+reg add   "HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\CUDA\v11.6" /v InstallDir /t REG_SZ /d "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6" /f
+:CUDA_11_6_VAR_INSTALLED
+
 rem set DEBUG_COMPILE="CONFIG+=debug"
 
 if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" ( 

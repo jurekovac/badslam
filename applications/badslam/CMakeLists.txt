@@ -2,18 +2,17 @@
 # set_target_properties(MyLib PROPERTIES DEBUG_POSTFIX "d")
 # set_target_properties(MyLib PROPERTIES OUTPUT_NAME "MyLib$<$<CONFIG:Debug>:d>") 
 
-if (MSVC)
-  add_compile_options(/bigobj)
-else ()
-  add_compile_options(-Wa,-mbig-obj)
-endif ()
+# IZI https://github.com/facebookresearch/pytorch3d/issues/1227
+# IZI https://github.com/NVIDIA/cub/tree/1.16.X
+add_compile_definitions(THRUST_IGNORE_CUB_VERSION_CHECK)
+
 
 if (CMAKE_CUDA_COMPILER)
   # Make CMake find the Find<Package>.cmake files in the cmake subdirectory.
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
   
   # https://github.com/dorian3d/DLib
-
+ 
   set(WITH_REALSENSE OFF CACHE BOOL "Enable Realsense2 Support" FORCE)
   set(WITH_K4A OFF CACHE BOOL "Enable Kinect4Azure Support" FORCE)
   # Dependencies 
@@ -45,8 +44,8 @@ if (CMAKE_CUDA_COMPILER)
     find_package(X11 REQUIRED)
   endif()
 
-  add_subdirectory(third_party/DBoW2)
-  set_target_properties(DBoW2 Dependencies PROPERTIES FOLDER "badslam/third_party/DBoW2")
+  #add_subdirectory(third_party/DBoW2)
+  #set_target_properties(DBoW2 Dependencies PROPERTIES FOLDER "badslam/third_party/DBoW2")
   
   find_package(opengv REQUIRED)
   # Optional, only required for live RealSense camera support
@@ -104,6 +103,7 @@ if (CMAKE_CUDA_COMPILER)
         #       to not use -march=native at the moment).
         $<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>
         $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+		$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
         # NOTE: Uncomment the line below if using cuda-memcheck
         # $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -rdynamic -lineinfo>
     )
@@ -128,7 +128,8 @@ if (CMAKE_CUDA_COMPILER)
   target_include_directories(badslam_baselib
     PRIVATE
       src
-	  third_party/DBoW2/include/
+	  ${DBOW2INCLUDE_DIR}
+#	  third_party/DBoW2/include/
 	  ${OPENGV_INCLUDE_DIRS}
       ${SuiteSparse_INCLUDE_DIRS}
       ${GLEW_INCLUDE_DIR}
@@ -215,13 +216,12 @@ if (CMAKE_CUDA_COMPILER)
   set_property(TARGET badslam PROPERTY FOLDER "badslam")
   target_include_directories(badslam PRIVATE
     src
-
-    third_party
-    third_party/DBoW2/include/
+#    third_party/DBoW2/include/
     ${DBOW2_INCLUDE_DIR}
     ${DLIB_INCLUDE_DIR}
     ${realsense_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
+    third_party
   )
   target_link_libraries(badslam PRIVATE
     badslam_baselib
@@ -256,7 +256,7 @@ if (CMAKE_CUDA_COMPILER)
     badslam_baselib
     gtest
     Threads::Threads
-#	${DBOW2_LIBRARIES}
+	${DBOW2_LIBRARIES}
     ${X11_LIBRARIES}
   )
   add_test(badslam_test
