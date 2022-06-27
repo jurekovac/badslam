@@ -1,16 +1,42 @@
+# set(CMAKE_DEBUG_POSTFIX d)
+# set_target_properties(MyLib PROPERTIES DEBUG_POSTFIX "d")
+# set_target_properties(MyLib PROPERTIES OUTPUT_NAME "MyLib$<$<CONFIG:Debug>:d>") 
+
+if (MSVC)
+  add_compile_options(/bigobj)
+else ()
+  add_compile_options(-Wa,-mbig-obj)
+endif ()
+
 if (CMAKE_CUDA_COMPILER)
   # Make CMake find the Find<Package>.cmake files in the cmake subdirectory.
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
   
-  set(DLib_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/DLib/lib/cmake/DLib")
-  set(opengv_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/opengv/lib/cmake/opengv-1.0")
+  # https://github.com/dorian3d/DLib
 
-  # Dependencies
+  set(WITH_REALSENSE OFF CACHE BOOL "Enable Realsense2 Support" FORCE)
+  set(WITH_K4A OFF CACHE BOOL "Enable Kinect4Azure Support" FORCE)
+  # Dependencies 
+  #find_package(jsoncpp REQUIRED)
   find_package(SuiteSparse REQUIRED)
   find_package(DLib REQUIRED)
+  find_package(DBoW2 REQUIRED)
   find_package(Eigen3 REQUIRED)
   find_package(g2o REQUIRED)
   find_package(OpenGL REQUIRED)
+  find_package(Opengv REQUIRED)
+
+  if (OPENGV_FOUND)
+	message( "OPENGV_LIBRARIES::     " ${OPENGV_LIBRARIES})
+	message( "OPENGV_INCLUDE_DIR::   " ${OPENGV_INCLUDE_DIR})
+	message( "OPENGV_LIBRARIES_DIR:: " ${OPENGV_LIBRARIES_DIR})
+  endif()
+  if (DBOW2_FOUND)
+	message( "DBOW2_LIBRARIES::     " ${DBOW2_LIBRARIES})
+	message( "DBOW2_INCLUDE_DIR::   " ${DBOW2_INCLUDE_DIR})
+	message( "DBOW2_LIBRARIES_DIR:: " ${DBOW2_LIBRARIES_DIR})
+  endif()
+
   # Cross-platform threading. See:
   # https://cmake.org/cmake/help/latest/module/FindThreads.html
   find_package(Threads REQUIRED)
@@ -23,21 +49,22 @@ if (CMAKE_CUDA_COMPILER)
   set_target_properties(DBoW2 Dependencies PROPERTIES FOLDER "badslam/third_party/DBoW2")
   
   find_package(opengv REQUIRED)
-  
   # Optional, only required for live RealSense camera support
-  find_package(realsense2)
-
-  # Optional, only required for live Azure Kinect camera support
-  if (WIN32)
-    # Use a custom find script in the cmake subdirectory since the K4A SDK does
-    # not seem to ship cmake files on Windows
-    find_package(K4A)
-  else()
-    # On Linux, use the SDK-provided CMake files
-    find_package(k4a)
-    find_package(k4arecord)
+  if(WITH_REALSENSE)
+	find_package(realsense2)
   endif()
-  
+  # Optional, only required for live Azure Kinect camera support
+  if(WITH_K4A)
+	  if (WIN32)
+		# Use a custom find script in the cmake subdirectory since the K4A SDK does
+		# not seem to ship cmake files on Windows
+		find_package(K4A)
+	  else()
+		# On Linux, use the SDK-provided CMake files
+		find_package(k4a)
+		find_package(k4arecord)
+	  endif()
+  endif()
   # Optional, only required for live Structure Core camera support
   find_package(Structure)
 
@@ -101,14 +128,15 @@ if (CMAKE_CUDA_COMPILER)
   target_include_directories(badslam_baselib
     PRIVATE
       src
-      third_party/DBoW2/include/
+	  third_party/DBoW2/include/
+	  ${OPENGV_INCLUDE_DIRS}
       ${SuiteSparse_INCLUDE_DIRS}
       ${GLEW_INCLUDE_DIR}
-      ${DLib_INCLUDE_DIRS}
+      ${DLIB_INCLUDE_DIRS}
     PUBLIC
-      third_party
       ${OpenCV_INCLUDE_DIRS}
       ${Boost_INCLUDE_DIR}
+      third_party
   )
   if (CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 11)
     target_include_directories(badslam_baselib PUBLIC
@@ -153,17 +181,17 @@ if (CMAKE_CUDA_COMPILER)
 
   target_link_libraries(badslam_baselib
     PRIVATE
-      opengv
       g2o::core
       g2o::types_slam3d
       g2o::solver_csparse
       g2o::csparse_extension
-      ${SuiteSparse_LIBRARIES}
-      g2o::stuff
+      g2o::stuff 
+	  ${DBOW2_LIBRARIES}
+ 	  ${DLIB_LIBRARIES}
+	  ${SuiteSparse_LIBRARIES}
       ${OpenCV_LIBS}
-      ${DLib_LIBS}
-      DBoW2
       ${realsense2_LIBRARY}
+	  ${OPENGV_LIBRARIES}
       ${OPENGL_LIBRARY}
       ${GLEW_LIBRARIES}
       ${X11_LIBRARIES}
@@ -187,8 +215,11 @@ if (CMAKE_CUDA_COMPILER)
   set_property(TARGET badslam PROPERTY FOLDER "badslam")
   target_include_directories(badslam PRIVATE
     src
+
     third_party
     third_party/DBoW2/include/
+    ${DBOW2_INCLUDE_DIR}
+    ${DLIB_INCLUDE_DIR}
     ${realsense_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
   )
@@ -219,11 +250,13 @@ if (CMAKE_CUDA_COMPILER)
     ${gtest_SOURCE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+	third_party
   )
   target_link_libraries(badslam_test PRIVATE
     badslam_baselib
     gtest
     Threads::Threads
+#	${DBOW2_LIBRARIES}
     ${X11_LIBRARIES}
   )
   add_test(badslam_test
