@@ -2,8 +2,6 @@
 # set_target_properties(MyLib PROPERTIES DEBUG_POSTFIX "d")
 # set_target_properties(MyLib PROPERTIES OUTPUT_NAME "MyLib$<$<CONFIG:Debug>:d>") 
 
-# IZI https://github.com/facebookresearch/pytorch3d/issues/1227
-# IZI https://github.com/NVIDIA/cub/tree/1.16.X
 add_compile_definitions(THRUST_IGNORE_CUB_VERSION_CHECK)
 
 
@@ -216,11 +214,11 @@ if (CMAKE_CUDA_COMPILER)
   set_property(TARGET badslam PROPERTY FOLDER "badslam")
   target_include_directories(badslam PRIVATE
     src
-#    third_party/DBoW2/include/
     ${DBOW2_INCLUDE_DIR}
     ${DLIB_INCLUDE_DIR}
     ${realsense_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
+    third_party/DBoW2/include/
     third_party
   )
   target_link_libraries(badslam PRIVATE
