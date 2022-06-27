@@ -41,6 +41,7 @@
 #include "badslam/bad_slam_config.h"
 #include "badslam/kernels.h"
 #include "badslam/pairwise_frame_tracking.h"
+#include <Windows.h>
 
 namespace vis {
 

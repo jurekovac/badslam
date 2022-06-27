@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.6...3.14)
-project(libvis LANGUAGES C CXX)
+set(CMAKE_DEBUG_POSTFIX "_d")
+set(CMAKE_GENERATOR_PLATFORM x64)
 
+project(libvis LANGUAGES C CXX)
 
 # Enable C++14 globally
 set(CMAKE_CXX_STANDARD 14)
@@ -15,7 +17,7 @@ if(MSVC)
   # and also https://stackoverflow.com/questions/37128555/getting-cmake-to-build-shared-library-for-msvc
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols in Visual Studio")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /bigobj")
   #set(CMake_MSVC_PARALLEL)
   #message ("Enabling parallel builds in visual studio")
 endif()
@@ -103,25 +105,36 @@ target_link_libraries(loguru
   ${CMAKE_DL_LIBS}
 )
 
-# GTest (packaged)
-add_subdirectory(libvis/third_party/gtest)
-set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
-
-if(MSVC)
-  if (MSVC_VERSION GREATER_EQUAL 1900)
-    target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-    target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-  endif()
+find_package(GTest CONFIG REQUIRED) # https://stackoverflow.com/questions/41315739/vcpkg-does-not-work-for-google-test
+if(NOT GTest_FOUND)
+	# GTest (packaged)
+	add_subdirectory(libvis/third_party/gtest)
+	set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
+	if(MSVC)
+	  if (MSVC_VERSION GREATER_EQUAL 1900)
+		target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+		target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+	  endif()
+	endif()
 endif()
 enable_testing()
 
-# libpng (packaged)
-add_subdirectory(libvis/third_party/libpng)
-set_target_properties(png png_static genfiles PROPERTIES FOLDER "libvis/third_party/png")
+find_package(tinyxml2 REQUIRED)
+
+find_package(PNG REQUIRED)
+if(NOT PNG_FOUND)
+  # libpng (packaged)
+  add_subdirectory(libvis/third_party/libpng)
+  set_target_properties(png png_static genfiles PROPERTIES FOLDER "libvis/third_party/png")
+endif()
 
 # GLEW (external, required)
 find_package(GLEW REQUIRED)
 
+find_package(opengv REQUIRED)
+set (VCPKG_ROOT ${OPENGV_LIBRARIES_DIR}/..)
+message( "OPENGV_LIBRARIES_DIR:" ${OPENGV_LIBRARIES_DIR})
+message ("VCPKG_ROOT: " ${VCPKG_ROOT})
 # Vulkan (external, optional)
 set(VULKAN_PATH "" CACHE PATH "Set this to the path of the Vulkan SDK installation (the directory containing include and lib) if installed locally, otherwise leave this empty.")
 if(NOT (VULKAN_PATH STREQUAL ""))
@@ -347,9 +360,10 @@ add_library(libvis SHARED
   ${LIBVIS_FILES}
 )
 set_property(TARGET libvis PROPERTY FOLDER "libvis")
+#set_property(TARGET libvis PROPERTY DEBUG_POSTFIX "_d")
 
 target_compile_options(libvis PRIVATE
-  "${LIBVIS_WARNING_OPTIONS}"
+	"${LIBVIS_WARNING_OPTIONS}"
 )
 if (VULKAN_FOUND)
   target_compile_options(libvis PUBLIC -DLIBVIS_HAVE_VULKAN)
@@ -371,27 +385,31 @@ endif()
 
 target_include_directories(libvis
   PUBLIC
+    ${PNG_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
 	${OpenCV_INCLUDE_DIRS}
     libvis/third_party/sophus
     ./libvis/src
   PRIVATE
     ${Boost_INCLUDE_DIR}
-    ${gtest_SOURCE_DIR}/include
-    ${gtest_SOURCE_DIR}
-    libvis/third_party
+    ${GTEST_INCLUDE_DIRS}
+#    ${gtest_SOURCE_DIR}/include
+#    ${gtest_SOURCE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Opengl_INCLUDE_DIRS}
     ${Qt5Opengl_INCLUDE_DIRS}
+    libvis/third_party
 )
+
 # Using the static version of libpng hopefully ensures that we won't get a
 # totally outdated version at runtime, resulting in an error like:
 # libpng warning: Application was compiled with png.h from libpng-1.6.27                                                               
 # libpng warning: Application  is  running with png.c from libpng-1.2.50                                                               
 # libpng error: Incompatible libpng version in application and library
 # TODO: However, it does not seem to work together with Qt
+
 target_link_libraries(libvis
   PUBLIC
     loguru
@@ -403,7 +421,8 @@ target_link_libraries(libvis
     ${GLEW_LIBRARIES}
     ${OPENGL_LIBRARY}
     ${Qt5X11Extras_LIBRARIES}
-    png  #_static
+    ${PNG_LIBRARIES}
+    # png  #_static
     #z
     Threads::Threads
 )
@@ -422,14 +441,16 @@ add_library(libvis_external_io SHARED
   libvis/src/libvis/external_io/colmap_model.h
   libvis/src/libvis/external_io/meshlab_project.cc
   libvis/src/libvis/external_io/meshlab_project.h
-  
-  libvis/third_party/tinyxml2/tinyxml2.cpp
+#  libvis/third_party/tinyxml2/tinyxml2.cpp
 )
 set_property(TARGET libvis_external_io PROPERTY FOLDER "libvis")
+#set_property(TARGET libvis_external_io PROPERTY DEBUG_POSTFIX "_d")
+
 target_compile_options(libvis_external_io PRIVATE
   "${LIBVIS_WARNING_OPTIONS}"
 )
 target_link_libraries(libvis_external_io PUBLIC
+  tinyxml2::tinyxml2
   ${Boost_LIBRARIES}
   libvis
 )
@@ -461,6 +482,7 @@ if (CMAKE_CUDA_COMPILER)
   )
   set_property(TARGET libvis_cuda PROPERTY FOLDER "libvis")
   set_property(TARGET libvis_cuda PROPERTY CUDA_ARCHITECTURES 75)
+#  set_property(TARGET libvis_cuda PROPERTY DEBUG_POSTFIX "_d")
   target_include_directories(libvis_cuda PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     ${OpenCV_INCLUDE_DIRS}
@@ -499,15 +521,23 @@ add_executable(libvis_test
   libvis/src/libvis/test/util.cc
 )
 set_property(TARGET libvis_test PROPERTY FOLDER "libvis")
+#set_property(TARGET libvis_test PROPERTY DEBUG_POSTFIX "_d")
+
 target_link_libraries(libvis_test PRIVATE
-  gtest
+  $<$<CONFIG:Debug>:${VCPKG_ROOT}/debug/lib/gtestd.lib>
+  $<$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>>:${VCPKG_ROOT}/lib/gtest.lib>
+
+  #gtest
   Threads::Threads
   libvis
   cublas  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
 )
+
 target_include_directories(libvis_test PRIVATE
-  ${gtest_SOURCE_DIR}/include
+  ${GTEST_INCLUDE_DIRS}
+  #${gtest_SOURCE_DIR}/include
   #${gtest_SOURCE_DIR}
+  ${PNG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}  # TODO: currently required because of lm_optimizer.h. That should not be necessary.

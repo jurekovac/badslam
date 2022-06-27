@@ -2,11 +2,12 @@
 
 ## CadStar Notes ##
 
-1. install vcpkg dependencies: 
+1. recomended to use cadstar vcpkg for it, you can find built version [here](https://cadstartech-my.sharepoint.com/:f:/g/personal/mohammad_naghizadeh_cadstar_dental/Ep43aCTrgIVPkZbep2rMGksB5U3HCKiirgsGFCKJ90o8iA?e=N0mHaX)
 - suitesparse
 - g2o
 - glew
 - opengl
+- realsens (optinal)
 
 2. clone badslam repository. Checkout branch _feat_gpu_global_alignment_
 3. run cmake:
