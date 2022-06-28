@@ -4,6 +4,8 @@ cd %~dp0
 set MYPATH=%CD%
 echo.
 
+set USE_VS2022=0
+
 rem https://github.com/facebookresearch/pytorch3d/issues/1227
 rem https://github.com/NVIDIA/cub/tree/1.16.X
 
@@ -17,6 +19,7 @@ reg add   "HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\
 rem set DEBUG_COMPILE="CONFIG+=debug"
 
 if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" ( 
+	set USE_VS2022=1
 	call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 
 ) else ( 
 	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" ( 
@@ -91,7 +94,9 @@ echo ================= COMPILE BADSLAM %COMPILE_KEYW% ======================
 echo .
 echo .
 
-cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DBADSLAM_DIR=/CSBadSlam -DBADSLAM_BUILD_DIR=/CSBadSlam/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+if %USE_VS2022% == 1 cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DBADSLAM_DIR=/CSBadSlam -DBADSLAM_BUILD_DIR=/CSBadSlam/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+else                 cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DBADSLAM_DIR=/CSBadSlam -DBADSLAM_BUILD_DIR=/CSBadSlam/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+
 
 if %COMPILE_DEBUG% == 0 (
 	cmake --build . --target install --config Release
