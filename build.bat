@@ -17,6 +17,7 @@ set INSTALL_DIR=%MYPATH%\..\install
 
 set QTOPENSSL=C:\Qt\Tools\OpenSSL\Win_x64\bin
 
+echo TRY WITH  %VCPKG_EXPORT%
 if not exist %VCPKG_EXPORT% set VCPKG_EXPORT=%MYPATH%\..\vcpkg-export 
 
 echo USING VCPKG_EXPORT %VCPKG_EXPORT%
@@ -111,8 +112,11 @@ echo ================= COMPILE BADSLAM %COMPILE_KEYW% ======================
 echo .
 echo .
 
-if %USE_VS2022% == 1 cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=%VCPKG-EXPORT%\scripts\buildsystems\vcpkg.cmake -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%MYPATH% -DBADSLAM_BUILD_DIR=%MYPATH%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
-else                 cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=%VCPKG-EXPORT%\scripts\buildsystems\vcpkg.cmake -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%MYPATH% -DBADSLAM_BUILD_DIR=%MYPATH%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+if %USE_VS2022% == 1 (
+	cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%MYPATH% -DBADSLAM_BUILD_DIR=%MYPATH%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+) else (
+    cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%MYPATH% -DBADSLAM_BUILD_DIR=%MYPATH%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+)   
 
 if %COMPILE_DEBUG% == 0 (
 	cmake --build . --target install --config Release
