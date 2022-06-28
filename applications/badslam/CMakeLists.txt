@@ -33,7 +33,11 @@ if (CMAKE_CUDA_COMPILER)
 	message( "DBOW2_INCLUDE_DIR::   " ${DBOW2_INCLUDE_DIR})
 	message( "DBOW2_LIBRARIES_DIR:: " ${DBOW2_LIBRARIES_DIR})
   endif()
-
+  if (DLIB_FOUND)
+	message( "DLIB_LIBRARIES::     " ${DLIB_LIBRARIES})
+	message( "DLIB_INCLUDE_DIR::   " ${DLIB_INCLUDE_DIR})
+	message( "DLIB_LIBRARIES_DIR:: " ${DLIB_LIBRARIES_DIR})
+  endif()
   # Cross-platform threading. See:
   # https://cmake.org/cmake/help/latest/module/FindThreads.html
   find_package(Threads REQUIRED)
