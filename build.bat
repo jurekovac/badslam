@@ -36,9 +36,9 @@ reg add   "HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\
 
 rem set DEBUG_COMPILE="CONFIG+=debug"
 
-if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" ( 
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" ( 
 	set USE_VS2022=1
-	call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 
+	call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 
 ) else ( 
 	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" ( 
 		call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 
@@ -50,12 +50,12 @@ if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxil
 set MSDEVDIR="C:\Program Files (x86)\Microsoft Visual Studio 14.0"
 if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community" set MSDEVDIR="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community"
 if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community" set MSDEVDIR="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community"
-if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community" set MSDEVDIR="C:\Program Files (x86)\Microsoft Visual Studio\2022\Community"
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community" set MSDEVDIR="C:\Program Files\Microsoft Visual Studio\2022\Community"
 echo %MSDEVDIR%
 
 set MSBUILDDIR="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin"
 if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin" set MSBUILDDIR="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin"
-if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin" set MSBUILDDIR="C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin"
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin" set MSBUILDDIR="C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin"
 echo 
 
 set QTDIR="C:\Qt\5.15.0"
