@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6...3.14)
+set(CMAKE_DEBUG_POSTFIX "d")
+
 project(libvis LANGUAGES C CXX)
+
 
 
 # Enable C++14 globally
@@ -347,6 +350,7 @@ add_library(libvis SHARED
   ${LIBVIS_FILES}
 )
 set_property(TARGET libvis PROPERTY FOLDER "libvis")
+set_property(TARGET libvis PROPERTY DEBUG_POSTFIX "d")
 
 target_compile_options(libvis PRIVATE
 	"${LIBVIS_WARNING_OPTIONS}"
@@ -462,6 +466,7 @@ if (CMAKE_CUDA_COMPILER)
   )
   set_property(TARGET libvis_cuda PROPERTY FOLDER "libvis")
   set_property(TARGET libvis_cuda PROPERTY CUDA_ARCHITECTURES 75)
+  set_property(TARGET libvis_cuda PROPERTY DEBUG_POSTFIX "d")
   target_include_directories(libvis_cuda PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     ${OpenCV_INCLUDE_DIRS}
