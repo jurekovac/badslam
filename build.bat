@@ -26,6 +26,40 @@ echo USING INSTALL_DIR %INSTALL_DIR%
 rem https://github.com/facebookresearch/pytorch3d/issues/1227
 rem https://github.com/NVIDIA/cub/tree/1.16.X
 
+
+if exist         "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v150\BuildCustomizations" ( 
+	echo check   "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v150\BuildCustomizations\CUDA 11.6.xml"
+	if not exist "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v150\BuildCustomizations\CUDA 11.6.xml" ( 
+		echo ERROR::: CUDA BUILD EXTENSIONS MISSING, PLEASE INSTALL \\DESKTOP-R6C2DTL\vcpkg-registry\packages\BuildCustomizations.7z
+	)
+)
+if exist         "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v160\BuildCustomizations" ( 
+	echo check   "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v160\BuildCustomizations\CUDA 11.6.xml"
+	if not exist "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v160\BuildCustomizations\CUDA 11.6.xml" ( 
+		echo ERROR::: CUDA BUILD EXTENSIONS MISSING, PLEASE INSTALL \\DESKTOP-R6C2DTL\vcpkg-registry\packages\BuildCustomizations.7z
+	)
+)
+if exist         "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v170\BuildCustomizations" ( 
+	echo check   "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v170\BuildCustomizations\CUDA 11.6.xml"
+	if not exist "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v170\BuildCustomizations\CUDA 11.6.xml" ( 
+		echo ERROR::: CUDA BUILD EXTENSIONS MISSING, PLEASE INSTALL \\DESKTOP-R6C2DTL\vcpkg-registry\packages\BuildCustomizations.7z
+	)
+)
+
+if exist         "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\BuildCustomizations" ( 
+	echo check   "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\BuildCustomizations\CUDA 11.6.xml"
+	if not exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v150\BuildCustomizations\CUDA 11.6.xml" ( 
+		echo ERROR::: CUDA BUILD EXTENSIONS MISSING, PLEASE INSTALL \\DESKTOP-R6C2DTL\vcpkg-registry\packages\BuildCustomizations.7z
+	)
+)
+if exist         "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\BuildCustomizations" ( 
+	echo check   "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\BuildCustomizations\CUDA 11.6.xml"
+	if not exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\BuildCustomizations\CUDA 11.6.xml" ( 
+		echo ERROR::: CUDA BUILD EXTENSIONS MISSING, PLEASE INSTALL \\DESKTOP-R6C2DTL\vcpkg-registry\packages\BuildCustomizations.7z
+	)
+)
+echo "."
+
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
 
 reg query "HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\CUDA\v11.6" /v 64BitInstalled
