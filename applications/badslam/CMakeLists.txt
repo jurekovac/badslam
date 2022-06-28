@@ -1,6 +1,6 @@
-# set(CMAKE_DEBUG_POSTFIX d)
-# set_target_properties(MyLib PROPERTIES DEBUG_POSTFIX "d")
-# set_target_properties(MyLib PROPERTIES OUTPUT_NAME "MyLib$<$<CONFIG:Debug>:d>") 
+set(CMAKE_DEBUG_POSTFIX "d")
+
+#set_target_properties(badslam_baselib PROPERTIES OUTPUT_NAME "badslam_baselib$<$<CONFIG:Debug>:d>") 
 
 add_compile_definitions(THRUST_IGNORE_CUB_VERSION_CHECK)
 
@@ -87,6 +87,7 @@ if (CMAKE_CUDA_COMPILER)
   add_library(badslam_baselib
     ${BAD_SLAM_SRC}
   )
+  set_target_properties(badslam_baselib PROPERTIES DEBUG_POSTFIX "d")
   set_property(TARGET badslam_baselib PROPERTY FOLDER "badslam")
   set_property(TARGET badslam_baselib PROPERTY CUDA_ARCHITECTURES 75)
   target_compile_options(badslam_baselib
