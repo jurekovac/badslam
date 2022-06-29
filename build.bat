@@ -10,18 +10,27 @@ rem VCPKG-EXPORT=F:\Scanner\G2\Dev\3rdparty\vcpkg\vcpkg-export-28.06.2022
 rem INSTALL_DIR= F:\Scanner\G2\Dev\App\current\install 
 rem              F:/Scanner/G2/Dev/App/current/CSBadSlam/
 
-set USE_VS2022=0
-
 set VCPKG_EXPORT=%MYPATH%\..\..\..\3rdparty\vcpkg\vcpkg-export
 set INSTALL_DIR=%MYPATH%\..\install
+set BADSLAM_DIR=\CSBadSlam
 
 set QTOPENSSL=C:\Qt\Tools\OpenSSL\Win_x64\bin
 
-echo TRY WITH  %VCPKG_EXPORT%
-if not exist %VCPKG_EXPORT% set VCPKG_EXPORT=%MYPATH%\..\vcpkg-export 
+echo 1.TRY WITH  %VCPKG_EXPORT%
+if not exist %VCPKG_EXPORT% (
+	set VCPKG_EXPORT=%MYPATH%\..\vcpkg-export 
+)
+echo 2.TRY WITH  %VCPKG_EXPORT%
+if not exist %VCPKG_EXPORT% (
+	set VCPKG_EXPORT=\vcpkg-export 
+)
 
+set USE_VS2022=0
+
+echo --------------------
 echo USING VCPKG_EXPORT %VCPKG_EXPORT%
 echo USING INSTALL_DIR %INSTALL_DIR%
+echo --------------------
 
 rem https://github.com/facebookresearch/pytorch3d/issues/1227
 rem https://github.com/NVIDIA/cub/tree/1.16.X
@@ -147,9 +156,9 @@ echo .
 echo .
 
 if %USE_VS2022% == 1 (
-	cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%MYPATH% -DBADSLAM_BUILD_DIR=%MYPATH%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+	cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%BADSLAM_DIR% -DBADSLAM_BUILD_DIR=%BADSLAM_DIR%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
 ) else (
-    cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%MYPATH% -DBADSLAM_BUILD_DIR=%MYPATH%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
+    cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=%TOOLCHAIN% -A x64 -T cuda=11.6 -DCMAKE_INSTALL_PREFIX=%INSTALL_DIR% -DBADSLAM_DIR=%BADSLAM_DIR% -DBADSLAM_BUILD_DIR=%BADSLAM_DIR%/build -DCMAKE_CUDA_ARCHITECTURES="75;86"  ..
 )   
 
 if %COMPILE_DEBUG% == 0 (
