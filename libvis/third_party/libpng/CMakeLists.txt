@@ -200,7 +200,7 @@ endif(PNG_HARDWARE_OPTIMIZATIONS)
 set(PNG_LIB_NAME png${PNGLIB_MAJOR}${PNGLIB_MINOR})
 
 # to distinguish between debug and release lib
-set(CMAKE_DEBUG_POSTFIX "d")
+set(CMAKE_DEBUG_POSTFIX "_d")
 
 include(CheckCSourceCompiles)
 option(ld-version-script "Enable linker version script" ON)
@@ -529,7 +529,11 @@ unset(PNG_LIB_TARGETS)
 if(PNG_SHARED)
   add_library(png SHARED ${libpng_sources})
   set(PNG_LIB_TARGETS png)
-  set_target_properties(png PROPERTIES OUTPUT_NAME ${PNG_LIB_NAME})
+  set_target_properties(png PROPERTIES 
+    OUTPUT_NAME ${PNG_LIB_NAME}
+	DEBUG_POSTFIX "_d"
+  )
+
   add_dependencies(png genfiles)
   if(MSVC)
     # msvc does not append 'lib' - do it here to have consistent name

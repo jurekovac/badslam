@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.6...3.14)
-set(CMAKE_DEBUG_POSTFIX "d")
+set(CMAKE_DEBUG_POSTFIX "_d")
 
 project(libvis LANGUAGES C CXX)
-
-
 
 # Enable C++14 globally
 set(CMAKE_CXX_STANDARD 14)
@@ -18,7 +16,7 @@ if(MSVC)
   # and also https://stackoverflow.com/questions/37128555/getting-cmake-to-build-shared-library-for-msvc
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols in Visual Studio")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /bigobj")
   #set(CMake_MSVC_PARALLEL)
   #message ("Enabling parallel builds in visual studio")
 endif()
@@ -85,6 +83,8 @@ add_library(loguru SHARED
   libvis/third_party/loguru/loguru.cpp
 )
 set_property(TARGET loguru PROPERTY FOLDER "libvis/third_party")
+set_property(TARGET loguru PROPERTY DEBUG_POSTFIX "_d")
+
 target_include_directories(loguru PUBLIC
   libvis/third_party/loguru/
 )
@@ -201,6 +201,7 @@ add_executable(bin2c
   ./libvis/src/bin2c/main.cc
 )
 set_property(TARGET bin2c PROPERTY FOLDER "libvis")
+set_property(TARGET bin2c PROPERTY DEBUG_POSTFIX "_d")
 
 target_include_directories(bin2c PRIVATE
   ${Boost_INCLUDE_DIR}
@@ -350,11 +351,10 @@ add_library(libvis SHARED
   ${LIBVIS_FILES}
 )
 set_property(TARGET libvis PROPERTY FOLDER "libvis")
-set_property(TARGET libvis PROPERTY DEBUG_POSTFIX "d")
+set_property(TARGET libvis PROPERTY DEBUG_POSTFIX "_d")
 
 target_compile_options(libvis PRIVATE
 	"${LIBVIS_WARNING_OPTIONS}"
-  	$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
 )
 if (VULKAN_FOUND)
   target_compile_options(libvis PUBLIC -DLIBVIS_HAVE_VULKAN)
@@ -431,6 +431,8 @@ add_library(libvis_external_io SHARED
   libvis/third_party/tinyxml2/tinyxml2.cpp
 )
 set_property(TARGET libvis_external_io PROPERTY FOLDER "libvis")
+set_property(TARGET libvis_external_io PROPERTY DEBUG_POSTFIX "_d")
+
 target_compile_options(libvis_external_io PRIVATE
   "${LIBVIS_WARNING_OPTIONS}"
 )
@@ -466,7 +468,7 @@ if (CMAKE_CUDA_COMPILER)
   )
   set_property(TARGET libvis_cuda PROPERTY FOLDER "libvis")
   set_property(TARGET libvis_cuda PROPERTY CUDA_ARCHITECTURES 75)
-  set_property(TARGET libvis_cuda PROPERTY DEBUG_POSTFIX "d")
+  set_property(TARGET libvis_cuda PROPERTY DEBUG_POSTFIX "_d")
   target_include_directories(libvis_cuda PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     ${OpenCV_INCLUDE_DIRS}
@@ -480,7 +482,6 @@ if (CMAKE_CUDA_COMPILER)
   target_compile_options(libvis_cuda PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>
     $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
-	$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
   )
 endif()
 
@@ -506,15 +507,15 @@ add_executable(libvis_test
   libvis/src/libvis/test/util.cc
 )
 set_property(TARGET libvis_test PROPERTY FOLDER "libvis")
+set_property(TARGET libvis_test PROPERTY DEBUG_POSTFIX "_d")
+
 target_link_libraries(libvis_test PRIVATE
   gtest
   Threads::Threads
   libvis
   cublas  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
 )
-target_compile_options(libvis_test PRIVATE
-	$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
-)
+
 target_include_directories(libvis_test PRIVATE
   ${gtest_SOURCE_DIR}/include
   #${gtest_SOURCE_DIR}

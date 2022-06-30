@@ -1,15 +1,13 @@
-set(CMAKE_DEBUG_POSTFIX "d")
+set(CMAKE_DEBUG_POSTFIX "_d")
 
-#set_target_properties(badslam_baselib PROPERTIES OUTPUT_NAME "badslam_baselib$<$<CONFIG:Debug>:d>") 
-
-add_compile_definitions(THRUST_IGNORE_CUB_VERSION_CHECK)
-
+if(MSVC)
+  add_compile_definitions(THRUST_IGNORE_CUB_VERSION_CHECK)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+endif()
 
 if (CMAKE_CUDA_COMPILER)
   # Make CMake find the Find<Package>.cmake files in the cmake subdirectory.
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-  
-  # https://github.com/dorian3d/DLib
  
   set(WITH_REALSENSE OFF CACHE BOOL "Enable Realsense2 Support" FORCE)
   set(WITH_K4A OFF CACHE BOOL "Enable Kinect4Azure Support" FORCE)
@@ -29,14 +27,14 @@ if (CMAKE_CUDA_COMPILER)
 	message( "OPENGV_LIBRARIES_DIR:: " ${OPENGV_LIBRARIES_DIR})
   endif()
   if (DBOW2_FOUND)
-	message( "DBOW2_LIBRARIES::     " ${DBOW2_LIBRARIES})
-	message( "DBOW2_INCLUDE_DIR::   " ${DBOW2_INCLUDE_DIR})
-	message( "DBOW2_LIBRARIES_DIR:: " ${DBOW2_LIBRARIES_DIR})
+	message( "DBOW2_LIBRARIES::      " ${DBOW2_LIBRARIES})
+	message( "DBOW2_INCLUDE_DIR::    " ${DBOW2_INCLUDE_DIR})
+	message( "DBOW2_LIBRARIES_DIR::  " ${DBOW2_LIBRARIES_DIR})
   endif()
   if (DLIB_FOUND)
-	message( "DLIB_LIBRARIES::     " ${DLIB_LIBRARIES})
-	message( "DLIB_INCLUDE_DIR::   " ${DLIB_INCLUDE_DIR})
-	message( "DLIB_LIBRARIES_DIR:: " ${DLIB_LIBRARIES_DIR})
+	message( "DLIB_LIBRARIES::       " ${DLIB_LIBRARIES})
+	message( "DLIB_INCLUDE_DIR::     " ${DLIB_INCLUDE_DIR})
+	message( "DLIB_LIBRARIES_DIR::   " ${DLIB_LIBRARIES_DIR})
   endif()
   # Cross-platform threading. See:
   # https://cmake.org/cmake/help/latest/module/FindThreads.html
@@ -87,15 +85,15 @@ if (CMAKE_CUDA_COMPILER)
   add_library(badslam_baselib
     ${BAD_SLAM_SRC}
   )
-  set_target_properties(badslam_baselib PROPERTIES DEBUG_POSTFIX "d")
   set_property(TARGET badslam_baselib PROPERTY FOLDER "badslam")
+  set_property(TARGET badslam_baselib PROPERTY DEBUG_POSTFIX "_d")
   set_property(TARGET badslam_baselib PROPERTY CUDA_ARCHITECTURES 75)
   target_compile_options(badslam_baselib
     PUBLIC
       ${LIBVIS_WARNING_OPTIONS}
   )
 
-    target_compile_options(badslam_baselib
+  target_compile_options(badslam_baselib
       PUBLIC
         # NOTE: The -march=native was required to be able to use opengv, otherwise
         #       it would just crash when calling an opengv function. I suspect
@@ -106,10 +104,9 @@ if (CMAKE_CUDA_COMPILER)
         #       to not use -march=native at the moment).
         $<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>
         $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
-		$<$<COMPILE_LANGUAGE:CXX>:/bigobj>
         # NOTE: Uncomment the line below if using cuda-memcheck
         # $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler -rdynamic -lineinfo>
-    )
+  )
   if (NOT MSVC)
     target_compile_options(badslam_baselib
       PUBLIC
@@ -217,13 +214,15 @@ if (CMAKE_CUDA_COMPILER)
     ${BADSLAM_SRC}
   )
   set_property(TARGET badslam PROPERTY FOLDER "badslam")
+  set_property(TARGET badslam PROPERTY DEBUG_POSTFIX "_d")
+
   target_include_directories(badslam PRIVATE
     src
     ${DBOW2_INCLUDE_DIR}
     ${DLIB_INCLUDE_DIR}
     ${realsense_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
-    third_party/DBoW2/include/
+#   third_party/DBoW2/include/
     third_party
   )
   target_link_libraries(badslam PRIVATE
@@ -247,6 +246,8 @@ if (CMAKE_CUDA_COMPILER)
     src/badslam/test/test_pose_optimization_photometric_residual.cc
   )
   set_property(TARGET badslam_test PROPERTY FOLDER "badslam")
+  set_property(TARGET badslam_test PROPERTY DEBUG_POSTFIX "_d")
+	
   target_include_directories(badslam_test PRIVATE
     src
     ${gtest_SOURCE_DIR}/include
