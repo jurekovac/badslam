@@ -24,6 +24,8 @@ cmake_policy(VERSION 3.1)
 project(libpng C ASM)
 enable_testing()
 
+set(CMAKE_DEBUG_POSTFIX "_d")
+
 set(PNGLIB_MAJOR 1)
 set(PNGLIB_MINOR 6)
 set(PNGLIB_RELEASE 37)
@@ -573,7 +575,7 @@ if(PNG_STATIC)
   list(APPEND PNG_LIB_TARGETS png_static)
   if(MSVC)
     # msvc does not append 'lib' - do it here to have consistent name
-    set_target_properties(png_static PROPERTIES PREFIX "lib")
+    set_target_properties(png_static PROPERTIES PREFIX "lib" DEBUG_POSTFIX "_d")
   endif()
   target_link_libraries(png_static ${ZLIB_LIBRARY} ${M_LIBRARY})
 endif()
