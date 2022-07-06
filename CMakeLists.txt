@@ -106,6 +106,11 @@ target_link_libraries(loguru
   ${CMAKE_DL_LIBS}
 )
 
+#find_package(GTest CONFIG REQUIRED) 
+# https://stackoverflow.com/questions/41315739/vcpkg-does-not-work-for-google-test
+#$(VcpkgRoot)lib\manual-link\gtest_main.lib
+#$(VcpkgRoot)debug\lib\manual-link\gtest_maind.lib
+
 # GTest (packaged)
 add_subdirectory(libvis/third_party/gtest)
 set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
@@ -117,6 +122,23 @@ if(MSVC)
   endif()
 endif()
 enable_testing()
+
+# find_package(PNG REQUIRED)
+if(PNG_FOUND)
+	message( "libpng_FOUND:    " ${PNG_FOUND} )
+	message( "PNG_LIBRARIES:   " ${PNG_LIBRARIES})
+	message( "PNG_LIBRARY:   "   ${PNG_LIBRARY})
+	message( "PNG_INCLUDE_DIRS:" ${PNG_INCLUDE_DIRS})
+endif()
+
+#find_package(TinyXML2 REQUIRED)
+if(TinyXML2_FOUND)
+	include_directories(${TinyXML2_INCLUDE_DIR})
+	message( "TinyXML2_FOUND:    " ${TinyXML2_FOUND} )
+	message( "TinyXML2_LIBRARIES:   " ${TinyXML2_LIBRARIES})
+	message( "TinyXML2_LIBRARY:   "   ${TinyXML2_LIBRARY})
+	message( "TinyXML2_INCLUDE_DIRS:" ${TinyXML2_INCLUDE_DIRS})
+endif()
 
 # libpng (packaged)
 add_subdirectory(libvis/third_party/libpng)
@@ -376,6 +398,7 @@ endif()
 
 target_include_directories(libvis
   PUBLIC
+    ${PNG_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
 	${OpenCV_INCLUDE_DIRS}
     libvis/third_party/sophus
@@ -384,19 +407,21 @@ target_include_directories(libvis
     ${Boost_INCLUDE_DIR}
     ${gtest_SOURCE_DIR}/include
     ${gtest_SOURCE_DIR}
-    libvis/third_party
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Opengl_INCLUDE_DIRS}
     ${Qt5Opengl_INCLUDE_DIRS}
+    libvis/third_party
 )
+
 # Using the static version of libpng hopefully ensures that we won't get a
 # totally outdated version at runtime, resulting in an error like:
 # libpng warning: Application was compiled with png.h from libpng-1.6.27                                                               
 # libpng warning: Application  is  running with png.c from libpng-1.2.50                                                               
 # libpng error: Incompatible libpng version in application and library
 # TODO: However, it does not seem to work together with Qt
+
 target_link_libraries(libvis
   PUBLIC
     loguru
@@ -408,8 +433,8 @@ target_link_libraries(libvis
     ${GLEW_LIBRARIES}
     ${OPENGL_LIBRARY}
     ${Qt5X11Extras_LIBRARIES}
-    png  #_static
-    #z
+	${PNG_LIBRARIES} 
+	png  #_static 
     Threads::Threads
 )
 if(VULKAN_FOUND)
@@ -427,7 +452,6 @@ add_library(libvis_external_io SHARED
   libvis/src/libvis/external_io/colmap_model.h
   libvis/src/libvis/external_io/meshlab_project.cc
   libvis/src/libvis/external_io/meshlab_project.h
-  
   libvis/third_party/tinyxml2/tinyxml2.cpp
 )
 set_property(TARGET libvis_external_io PROPERTY FOLDER "libvis")
@@ -519,9 +543,11 @@ target_link_libraries(libvis_test PRIVATE
 target_include_directories(libvis_test PRIVATE
   ${gtest_SOURCE_DIR}/include
   #${gtest_SOURCE_DIR}
+  ${PNG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
+
 )
 add_test(libvis_test
   libvis_test

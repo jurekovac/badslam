@@ -222,7 +222,6 @@ if (CMAKE_CUDA_COMPILER)
     ${DLIB_INCLUDE_DIR}
     ${realsense_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIR}
-#   third_party/DBoW2/include/
     third_party
   )
   target_link_libraries(badslam PRIVATE
