@@ -18,8 +18,16 @@ if (CMAKE_CUDA_COMPILER)
   find_package(DBoW2 REQUIRED)
   find_package(Eigen3 REQUIRED)
   find_package(g2o REQUIRED)
+  find_package(GTest CONFIG REQUIRED)
+  if(NOT GTest_FOUND)
+    # GTest (packaged)
+  endif()
+
+
   find_package(OpenGL REQUIRED)
   find_package(Opengv REQUIRED)
+  
+  set (VCPKG_ROOT ${OPENGV_LIBRARIES_DIR}/..)
 
   if (OPENGV_FOUND)
 	message( "OPENGV_LIBRARIES::     " ${OPENGV_LIBRARIES})
@@ -44,8 +52,10 @@ if (CMAKE_CUDA_COMPILER)
     find_package(X11 REQUIRED)
   endif()
 
-  #add_subdirectory(third_party/DBoW2)
-  #set_target_properties(DBoW2 Dependencies PROPERTIES FOLDER "badslam/third_party/DBoW2")
+  if (NOT DBOW2_FOUND)
+    add_subdirectory(third_party/DBoW2)
+    set_target_properties(DBoW2 Dependencies PROPERTIES FOLDER "badslam/third_party/DBoW2")
+  endif()
   
   find_package(opengv REQUIRED)
   # Optional, only required for live RealSense camera support
@@ -249,15 +259,26 @@ if (CMAKE_CUDA_COMPILER)
 	
   target_include_directories(badslam_test PRIVATE
     src
-    ${gtest_SOURCE_DIR}/include
-    ${gtest_SOURCE_DIR}
+ #   ${gtest_SOURCE_DIR}/include
+ #   ${gtest_SOURCE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 	third_party
   )
   target_link_libraries(badslam_test PRIVATE
     badslam_baselib
-    gtest
+	
+	$<$<CONFIG:Debug>:${VCPKG_ROOT}/debug/lib/gtestd.lib>
+    $<$<CONFIG:Release>:${VCPKG_ROOT}/lib/gtest.lib>
+    $<$<CONFIG:RelWithDebInfo>:${VCPKG_ROOT}/lib/gtest.lib>
+    $<$<CONFIG:MinSizeRel>:${VCPKG_ROOT}/lib/gtest.lib>
+	
+    $<$<CONFIG:Debug>:${VCPKG_ROOT}/debug/lib/manual-link/gtest_maind.lib>
+    $<$<CONFIG:Release>:${VCPKG_ROOT}/lib/manual-link/gtest_main.lib>
+    $<$<CONFIG:RelWithDebInfo>:${VCPKG_ROOT}/lib/manual-link/gtest_main.lib>
+    $<$<CONFIG:MinSizeRel>:${VCPKG_ROOT}/lib/manual-link/gtest_main.lib>
+	
+   #gtest
     Threads::Threads
 	${DBOW2_LIBRARIES}
     ${X11_LIBRARIES}

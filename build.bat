@@ -10,7 +10,8 @@ rem VCPKG-EXPORT=F:\Scanner\G2\Dev\3rdparty\vcpkg\vcpkg-export-28.06.2022
 rem INSTALL_DIR= F:\Scanner\G2\Dev\App\current\install 
 rem              F:/Scanner/G2/Dev/App/current/CSBadSlam/
 
-set VCPKG_EXPORT=%MYPATH%\..\..\..\3rdparty\vcpkg\vcpkg-export
+rem set VCPKG_EXPORT=%MYPATH%\..\..\..\3rdparty\vcpkg\vcpkg-export
+set VCPKG_EXPORT="\vcpkg-export"
 set INSTALL_DIR=%MYPATH%\..\install
 set BADSLAM_DIR=\CSBadSlam
 

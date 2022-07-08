@@ -106,46 +106,50 @@ target_link_libraries(loguru
   ${CMAKE_DL_LIBS}
 )
 
-#find_package(GTest CONFIG REQUIRED) 
-# https://stackoverflow.com/questions/41315739/vcpkg-does-not-work-for-google-test
-#$(VcpkgRoot)lib\manual-link\gtest_main.lib
-#$(VcpkgRoot)debug\lib\manual-link\gtest_maind.lib
-
-# GTest (packaged)
-add_subdirectory(libvis/third_party/gtest)
-set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
-
-if(MSVC)
-  if (MSVC_VERSION GREATER_EQUAL 1900)
-    target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-    target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-  endif()
+find_package(GTest CONFIG REQUIRED) # https://stackoverflow.com/questions/41315739/vcpkg-does-not-work-for-google-test
+if(NOT GTest_FOUND)
+	# GTest (packaged)
+	add_subdirectory(libvis/third_party/gtest)
+	set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
+	if(MSVC)
+	  if (MSVC_VERSION GREATER_EQUAL 1900)
+		target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+		target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+	  endif()
+	endif()
 endif()
 enable_testing()
 
-# find_package(PNG REQUIRED)
+find_package(PNG REQUIRED)
 if(PNG_FOUND)
 	message( "libpng_FOUND:    " ${PNG_FOUND} )
 	message( "PNG_LIBRARIES:   " ${PNG_LIBRARIES})
-	message( "PNG_LIBRARY:   "   ${PNG_LIBRARY})
+	message( "PNG_LIBRARY:     " ${PNG_LIBRARY})
 	message( "PNG_INCLUDE_DIRS:" ${PNG_INCLUDE_DIRS})
 endif()
 
-#find_package(TinyXML2 REQUIRED)
-if(TinyXML2_FOUND)
-	include_directories(${TinyXML2_INCLUDE_DIR})
-	message( "TinyXML2_FOUND:    " ${TinyXML2_FOUND} )
-	message( "TinyXML2_LIBRARIES:   " ${TinyXML2_LIBRARIES})
-	message( "TinyXML2_LIBRARY:   "   ${TinyXML2_LIBRARY})
-	message( "TinyXML2_INCLUDE_DIRS:" ${TinyXML2_INCLUDE_DIRS})
+find_package(tinyxml2 REQUIRED)
+message( "TinyXML2_FOUND:       " ${tinyxml2_FOUND} )
+message( "TINYXML2_FOUND:       " ${TINYXML2_FOUND} )
+if(TINYXML2_FOUND)
+	message( "TinyXML2_LIBRARIES:   " ${TINYXML2_LIBRARIES})
+	message( "TinyXML2_LIBRARY:     " ${TINYXML2_LIBRARY})
+	message( "TinyXML2_INCLUDE_DIRS:" ${TINYXML2_INCLUDE_DIRS})
 endif()
 
-# libpng (packaged)
-add_subdirectory(libvis/third_party/libpng)
-set_target_properties(png png_static genfiles PROPERTIES FOLDER "libvis/third_party/png")
+if(NOT PNG_FOUND)
+  # libpng (packaged)
+  add_subdirectory(libvis/third_party/libpng)
+  set_target_properties(png png_static genfiles PROPERTIES FOLDER "libvis/third_party/png")
+endif()
 
 # GLEW (external, required)
 find_package(GLEW REQUIRED)
+
+find_package(opengv REQUIRED)
+set (VCPKG_ROOT ${OPENGV_LIBRARIES_DIR}/..)
+message( "OPENGV_LIBRARIES_DIR:" ${OPENGV_LIBRARIES_DIR})
+message ("VCPKG_ROOT: " ${VCPKG_ROOT})
 
 # Vulkan (external, optional)
 set(VULKAN_PATH "" CACHE PATH "Set this to the path of the Vulkan SDK installation (the directory containing include and lib) if installed locally, otherwise leave this empty.")
@@ -405,8 +409,9 @@ target_include_directories(libvis
     ./libvis/src
   PRIVATE
     ${Boost_INCLUDE_DIR}
-    ${gtest_SOURCE_DIR}/include
-    ${gtest_SOURCE_DIR}
+	${GTEST_INCLUDE_DIRS}
+   # ${gtest_SOURCE_DIR}/include
+   # ${gtest_SOURCE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${Qt5Core_INCLUDE_DIRS}
@@ -434,7 +439,7 @@ target_link_libraries(libvis
     ${OPENGL_LIBRARY}
     ${Qt5X11Extras_LIBRARIES}
 	${PNG_LIBRARIES} 
-	png  #_static 
+	#png  #_static 
     Threads::Threads
 )
 if(VULKAN_FOUND)
@@ -452,7 +457,7 @@ add_library(libvis_external_io SHARED
   libvis/src/libvis/external_io/colmap_model.h
   libvis/src/libvis/external_io/meshlab_project.cc
   libvis/src/libvis/external_io/meshlab_project.h
-  libvis/third_party/tinyxml2/tinyxml2.cpp
+#  libvis/third_party/tinyxml2/tinyxml2.cpp
 )
 set_property(TARGET libvis_external_io PROPERTY FOLDER "libvis")
 set_property(TARGET libvis_external_io PROPERTY DEBUG_POSTFIX "_d")
@@ -461,6 +466,7 @@ target_compile_options(libvis_external_io PRIVATE
   "${LIBVIS_WARNING_OPTIONS}"
 )
 target_link_libraries(libvis_external_io PUBLIC
+  tinyxml2::tinyxml2
   ${Boost_LIBRARIES}
   libvis
 )
@@ -534,20 +540,24 @@ set_property(TARGET libvis_test PROPERTY FOLDER "libvis")
 set_property(TARGET libvis_test PROPERTY DEBUG_POSTFIX "_d")
 
 target_link_libraries(libvis_test PRIVATE
-  gtest
+  $<$<CONFIG:Debug>:${VCPKG_ROOT}/debug/lib/gtestd.lib>
+  $<$<CONFIG:Release>:${VCPKG_ROOT}/lib/gtest.lib>
+  $<$<CONFIG:RelWithDebInfo>:${VCPKG_ROOT}/lib/gtest.lib>
+  $<$<CONFIG:MinSizeRel>:${VCPKG_ROOT}/lib/gtest.lib>
+  #gtest
   Threads::Threads
   libvis
   cublas  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
 )
 
 target_include_directories(libvis_test PRIVATE
-  ${gtest_SOURCE_DIR}/include
+  ${GTEST_INCLUDE_DIRS}
+  #${gtest_SOURCE_DIR}/include
   #${gtest_SOURCE_DIR}
   ${PNG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
-
 )
 add_test(libvis_test
   libvis_test
