@@ -438,8 +438,8 @@ target_link_libraries(libvis
     ${GLEW_LIBRARIES}
     ${OPENGL_LIBRARY}
     ${Qt5X11Extras_LIBRARIES}
-	${PNG_LIBRARIES} 
-	#png  #_static 
+    ${PNG_LIBRARIES}
+    #png  #_static
     Threads::Threads
 )
 if(VULKAN_FOUND)
