@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.6...3.14)
+    
 project(libvis LANGUAGES C CXX)
 
+set(CMAKE_DEBUG_POSTFIX "_d")
 
 # Enable C++14 globally
 set(CMAKE_CXX_STANDARD 14)
@@ -15,7 +17,7 @@ if(MSVC)
   # and also https://stackoverflow.com/questions/37128555/getting-cmake-to-build-shared-library-for-msvc
   set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols in Visual Studio")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /bigobj")
   #set(CMake_MSVC_PARALLEL)
   #message ("Enabling parallel builds in visual studio")
 endif()
@@ -24,7 +26,6 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 include(CheckLanguage)
-
 
 ################################################################################
 # Dependencies.
@@ -38,13 +39,13 @@ include(CheckLanguage)
 check_language(CUDA)
 if (CMAKE_CUDA_COMPILER)
   enable_language(CUDA)
-  
+
   # Enable C++14 globally for CUDA code
   if(NOT DEFINED CMAKE_CUDA_STANDARD)
     set(CMAKE_CUDA_STANDARD 14)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   endif()
-  
+
   # It is very important that CUDA's nvcc uses exactly the same gcc version and
   # flags as is used for other C++ code. Otherwise, it can happen that classes
   # have different layouts as seen by code compiled by nvcc's gcc and by the
@@ -82,6 +83,8 @@ add_library(loguru SHARED
   libvis/third_party/loguru/loguru.cpp
 )
 set_property(TARGET loguru PROPERTY FOLDER "libvis/third_party")
+set_property(TARGET loguru PROPERTY DEBUG_POSTFIX "_d")
+
 target_include_directories(loguru PUBLIC
   libvis/third_party/loguru/
 )
@@ -93,7 +96,6 @@ target_compile_definitions(loguru PRIVATE
 )
 if(MSVC)
   set(LOGURU_DLL_EXPORT "__declspec(dllexport)")
-  #set(LOGURU_DLL_IMPORT "__declspec(dllimport)")
 endif()
 target_compile_definitions(loguru PRIVATE
   LOGURU_EXPORT=${LOGURU_DLL_EXPORT}
@@ -103,24 +105,50 @@ target_link_libraries(loguru
   ${CMAKE_DL_LIBS}
 )
 
-# GTest (packaged)
-add_subdirectory(libvis/third_party/gtest)
-set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
-
-if(MSVC)
-  if (MSVC_VERSION GREATER_EQUAL 1900)
-    target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-    target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+find_package(GTest CONFIG REQUIRED) # https://stackoverflow.com/questions/41315739/vcpkg-does-not-work-for-google-test
+if(NOT GTest_FOUND)
+  # GTest (packaged)
+  add_subdirectory(libvis/third_party/gtest)
+  set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
+  if(MSVC)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
+      target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+      target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+    endif()
   endif()
 endif()
 enable_testing()
 
-# libpng (packaged)
-add_subdirectory(libvis/third_party/libpng)
-set_target_properties(png png_static genfiles PROPERTIES FOLDER "libvis/third_party/png")
+find_package(PNG REQUIRED)
+if(PNG_FOUND)
+  message( "libpng_FOUND:    " ${PNG_FOUND} )
+  message( "PNG_LIBRARIES:   " ${PNG_LIBRARIES})
+  message( "PNG_LIBRARY:     " ${PNG_LIBRARY})
+  message( "PNG_INCLUDE_DIRS:" ${PNG_INCLUDE_DIRS})
+endif()
+
+find_package(tinyxml2 REQUIRED)
+message( "TinyXML2_FOUND:       " ${tinyxml2_FOUND} )
+message( "TINYXML2_FOUND:       " ${TINYXML2_FOUND} )
+if(TINYXML2_FOUND)
+  message( "TinyXML2_LIBRARIES:   " ${TINYXML2_LIBRARIES})
+  message( "TinyXML2_LIBRARY:     " ${TINYXML2_LIBRARY})
+  message( "TinyXML2_INCLUDE_DIRS:" ${TINYXML2_INCLUDE_DIRS})
+endif()
+
+if(NOT PNG_FOUND)
+  # libpng (packaged)
+  add_subdirectory(libvis/third_party/libpng)
+  set_target_properties(png png_static genfiles PROPERTIES FOLDER "libvis/third_party/png")
+endif()
 
 # GLEW (external, required)
 find_package(GLEW REQUIRED)
+
+find_package(opengv REQUIRED)
+set (VCPKG_ROOT ${OPENGV_LIBRARIES_DIR}/..)
+message( "OPENGV_LIBRARIES_DIR:" ${OPENGV_LIBRARIES_DIR})
+message ("VCPKG_ROOT: " ${VCPKG_ROOT})
 
 # Vulkan (external, optional)
 set(VULKAN_PATH "" CACHE PATH "Set this to the path of the Vulkan SDK installation (the directory containing include and lib) if installed locally, otherwise leave this empty.")
@@ -198,6 +226,7 @@ add_executable(bin2c
   ./libvis/src/bin2c/main.cc
 )
 set_property(TARGET bin2c PROPERTY FOLDER "libvis")
+set_property(TARGET bin2c PROPERTY DEBUG_POSTFIX "_d")
 
 target_include_directories(bin2c PRIVATE
   ${Boost_INCLUDE_DIR}
@@ -229,7 +258,7 @@ function(add_vulkan_shader TARGETNAME INPUT_FILEPATH _GENERATED_HEADERS)
     COMMAND glslangValidator -V -S vert -o ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.vert ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.vert
     COMMAND bin2c -n vis -H ${CMAKE_CURRENT_SOURCE_DIR}/libvis/src/libvis/shaders/license_header.h ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.vert
     DEPENDS bin2c ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.vert
-    )
+  )
   
   # Fragment shader.
   add_custom_command (
@@ -237,7 +266,7 @@ function(add_vulkan_shader TARGETNAME INPUT_FILEPATH _GENERATED_HEADERS)
     COMMAND glslangValidator -V -S frag -o ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.frag ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.frag
     COMMAND bin2c -n vis -H ${CMAKE_CURRENT_SOURCE_DIR}/libvis/src/libvis/shaders/license_header.h ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.frag
     DEPENDS bin2c ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.frag
-    )
+  )
   
   # Return generated headers in the variable named ${_GENERATED_HEADERS} in the
   # parent scope.
@@ -347,9 +376,10 @@ add_library(libvis SHARED
   ${LIBVIS_FILES}
 )
 set_property(TARGET libvis PROPERTY FOLDER "libvis")
+set_property(TARGET libvis PROPERTY DEBUG_POSTFIX "_d")
 
 target_compile_options(libvis PRIVATE
-  "${LIBVIS_WARNING_OPTIONS}"
+    "${LIBVIS_WARNING_OPTIONS}"
 )
 if (VULKAN_FOUND)
   target_compile_options(libvis PUBLIC -DLIBVIS_HAVE_VULKAN)
@@ -371,27 +401,29 @@ endif()
 
 target_include_directories(libvis
   PUBLIC
+    ${PNG_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
-	${OpenCV_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
     libvis/third_party/sophus
     ./libvis/src
   PRIVATE
     ${Boost_INCLUDE_DIR}
-    ${gtest_SOURCE_DIR}/include
-    ${gtest_SOURCE_DIR}
-    libvis/third_party
+    ${GTEST_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Opengl_INCLUDE_DIRS}
     ${Qt5Opengl_INCLUDE_DIRS}
+    libvis/third_party
 )
+
 # Using the static version of libpng hopefully ensures that we won't get a
 # totally outdated version at runtime, resulting in an error like:
 # libpng warning: Application was compiled with png.h from libpng-1.6.27                                                               
 # libpng warning: Application  is  running with png.c from libpng-1.2.50                                                               
 # libpng error: Incompatible libpng version in application and library
 # TODO: However, it does not seem to work together with Qt
+
 target_link_libraries(libvis
   PUBLIC
     loguru
@@ -403,8 +435,7 @@ target_link_libraries(libvis
     ${GLEW_LIBRARIES}
     ${OPENGL_LIBRARY}
     ${Qt5X11Extras_LIBRARIES}
-    png  #_static
-    #z
+    ${PNG_LIBRARIES}
     Threads::Threads
 )
 if(VULKAN_FOUND)
@@ -422,14 +453,15 @@ add_library(libvis_external_io SHARED
   libvis/src/libvis/external_io/colmap_model.h
   libvis/src/libvis/external_io/meshlab_project.cc
   libvis/src/libvis/external_io/meshlab_project.h
-  
-  libvis/third_party/tinyxml2/tinyxml2.cpp
 )
 set_property(TARGET libvis_external_io PROPERTY FOLDER "libvis")
+set_property(TARGET libvis_external_io PROPERTY DEBUG_POSTFIX "_d")
+
 target_compile_options(libvis_external_io PRIVATE
   "${LIBVIS_WARNING_OPTIONS}"
 )
 target_link_libraries(libvis_external_io PUBLIC
+  tinyxml2::tinyxml2
   ${Boost_LIBRARIES}
   libvis
 )
@@ -461,6 +493,7 @@ if (CMAKE_CUDA_COMPILER)
   )
   set_property(TARGET libvis_cuda PROPERTY FOLDER "libvis")
   set_property(TARGET libvis_cuda PROPERTY CUDA_ARCHITECTURES 75)
+  set_property(TARGET libvis_cuda PROPERTY DEBUG_POSTFIX "_d")
   target_include_directories(libvis_cuda PUBLIC
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     ${OpenCV_INCLUDE_DIRS}
@@ -499,15 +532,21 @@ add_executable(libvis_test
   libvis/src/libvis/test/util.cc
 )
 set_property(TARGET libvis_test PROPERTY FOLDER "libvis")
+set_property(TARGET libvis_test PROPERTY DEBUG_POSTFIX "_d")
+
 target_link_libraries(libvis_test PRIVATE
-  gtest
+  $<$<CONFIG:Debug>:${VCPKG_ROOT}/debug/lib/gtestd.lib>
+  $<$<CONFIG:Release>:${VCPKG_ROOT}/lib/gtest.lib>
+  $<$<CONFIG:RelWithDebInfo>:${VCPKG_ROOT}/lib/gtest.lib>
+  $<$<CONFIG:MinSizeRel>:${VCPKG_ROOT}/lib/gtest.lib>
   Threads::Threads
   libvis
   cublas  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
 )
+
 target_include_directories(libvis_test PRIVATE
-  ${gtest_SOURCE_DIR}/include
-  #${gtest_SOURCE_DIR}
+  ${GTEST_INCLUDE_DIRS}
+  ${PNG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
