@@ -96,7 +96,6 @@ target_compile_definitions(loguru PRIVATE
 )
 if(MSVC)
   set(LOGURU_DLL_EXPORT "__declspec(dllexport)")
-  #set(LOGURU_DLL_IMPORT "__declspec(dllimport)")
 endif()
 target_compile_definitions(loguru PRIVATE
   LOGURU_EXPORT=${LOGURU_DLL_EXPORT}
@@ -112,7 +111,7 @@ if(NOT GTest_FOUND)
   add_subdirectory(libvis/third_party/gtest)
   set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
   if(MSVC)
-    if (MSVC_VERSION GREATER_EQUAL 1900)
+    if(MSVC_VERSION GREATER_EQUAL 1900)
       target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
       target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
     endif()
@@ -259,7 +258,7 @@ function(add_vulkan_shader TARGETNAME INPUT_FILEPATH _GENERATED_HEADERS)
     COMMAND glslangValidator -V -S vert -o ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.vert ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.vert
     COMMAND bin2c -n vis -H ${CMAKE_CURRENT_SOURCE_DIR}/libvis/src/libvis/shaders/license_header.h ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.vert
     DEPENDS bin2c ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.vert
-    )
+  )
   
   # Fragment shader.
   add_custom_command (
@@ -267,7 +266,7 @@ function(add_vulkan_shader TARGETNAME INPUT_FILEPATH _GENERATED_HEADERS)
     COMMAND glslangValidator -V -S frag -o ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.frag ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.frag
     COMMAND bin2c -n vis -H ${CMAKE_CURRENT_SOURCE_DIR}/libvis/src/libvis/shaders/license_header.h ${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILENAME}.frag
     DEPENDS bin2c ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILEPATH}.frag
-    )
+  )
   
   # Return generated headers in the variable named ${_GENERATED_HEADERS} in the
   # parent scope.
@@ -540,7 +539,6 @@ target_link_libraries(libvis_test PRIVATE
   $<$<CONFIG:Release>:${VCPKG_ROOT}/lib/gtest.lib>
   $<$<CONFIG:RelWithDebInfo>:${VCPKG_ROOT}/lib/gtest.lib>
   $<$<CONFIG:MinSizeRel>:${VCPKG_ROOT}/lib/gtest.lib>
-  #gtest
   Threads::Threads
   libvis
   cublas  # TODO: currently required because of lm_optimizer.h. That should not be necessary.
