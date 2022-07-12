@@ -191,7 +191,7 @@ if (CMAKE_CUDA_COMPILER)
       g2o::csparse_extension
       g2o::stuff 
       ${DBOW2_LIBRARIES}
-       ${DLIB_LIBRARIES}
+      ${DLIB_LIBRARIES}
       ${SuiteSparse_LIBRARIES}
       ${OpenCV_LIBS}
       ${realsense2_LIBRARY}
