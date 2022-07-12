@@ -548,8 +548,6 @@ target_link_libraries(libvis_test PRIVATE
 
 target_include_directories(libvis_test PRIVATE
   ${GTEST_INCLUDE_DIRS}
-  #${gtest_SOURCE_DIR}/include
-  #${gtest_SOURCE_DIR}
   ${PNG_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
