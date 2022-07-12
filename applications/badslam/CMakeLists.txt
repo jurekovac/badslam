@@ -123,7 +123,7 @@ if (CMAKE_CUDA_COMPILER)
         #       to not use -march=native at the moment).
         $<$<COMPILE_LANGUAGE:CXX>:-march=native>
     )
-    else()
+  else()
     target_compile_options(badslam_baselib
       PUBLIC
         $<$<COMPILE_LANGUAGE:CXX>:/fp:fast>
