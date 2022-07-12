@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6...3.14)
-
+    
 project(libvis LANGUAGES C CXX)
 
 set(CMAKE_DEBUG_POSTFIX "_d")
@@ -115,7 +115,7 @@ if(NOT GTest_FOUND)
     if (MSVC_VERSION GREATER_EQUAL 1900)
       target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
       target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-	endif()
+    endif()
   endif()
 endif()
 enable_testing()
@@ -380,7 +380,7 @@ set_property(TARGET libvis PROPERTY FOLDER "libvis")
 set_property(TARGET libvis PROPERTY DEBUG_POSTFIX "_d")
 
 target_compile_options(libvis PRIVATE
-	"${LIBVIS_WARNING_OPTIONS}"
+    "${LIBVIS_WARNING_OPTIONS}"
 )
 if (VULKAN_FOUND)
   target_compile_options(libvis PUBLIC -DLIBVIS_HAVE_VULKAN)
@@ -404,14 +404,12 @@ target_include_directories(libvis
   PUBLIC
     ${PNG_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
-	${OpenCV_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
     libvis/third_party/sophus
     ./libvis/src
   PRIVATE
     ${Boost_INCLUDE_DIR}
-	${GTEST_INCLUDE_DIRS}
-   # ${gtest_SOURCE_DIR}/include
-   # ${gtest_SOURCE_DIR}
+    ${GTEST_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${Qt5Core_INCLUDE_DIRS}
@@ -439,7 +437,6 @@ target_link_libraries(libvis
     ${OPENGL_LIBRARY}
     ${Qt5X11Extras_LIBRARIES}
     ${PNG_LIBRARIES}
-    #png  #_static
     Threads::Threads
 )
 if(VULKAN_FOUND)
@@ -457,7 +454,6 @@ add_library(libvis_external_io SHARED
   libvis/src/libvis/external_io/colmap_model.h
   libvis/src/libvis/external_io/meshlab_project.cc
   libvis/src/libvis/external_io/meshlab_project.h
-#  libvis/third_party/tinyxml2/tinyxml2.cpp
 )
 set_property(TARGET libvis_external_io PROPERTY FOLDER "libvis")
 set_property(TARGET libvis_external_io PROPERTY DEBUG_POSTFIX "_d")
