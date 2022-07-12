@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.6...3.14)
-set(CMAKE_DEBUG_POSTFIX "_d")
 
 project(libvis LANGUAGES C CXX)
+
+set(CMAKE_DEBUG_POSTFIX "_d")
 
 # Enable C++14 globally
 set(CMAKE_CXX_STANDARD 14)
@@ -26,7 +27,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 include(CheckLanguage)
 
-
 ################################################################################
 # Dependencies.
 
@@ -39,13 +39,13 @@ include(CheckLanguage)
 check_language(CUDA)
 if (CMAKE_CUDA_COMPILER)
   enable_language(CUDA)
-  
+
   # Enable C++14 globally for CUDA code
   if(NOT DEFINED CMAKE_CUDA_STANDARD)
     set(CMAKE_CUDA_STANDARD 14)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   endif()
-  
+
   # It is very important that CUDA's nvcc uses exactly the same gcc version and
   # flags as is used for other C++ code. Otherwise, it can happen that classes
   # have different layouts as seen by code compiled by nvcc's gcc and by the
@@ -108,33 +108,33 @@ target_link_libraries(loguru
 
 find_package(GTest CONFIG REQUIRED) # https://stackoverflow.com/questions/41315739/vcpkg-does-not-work-for-google-test
 if(NOT GTest_FOUND)
-	# GTest (packaged)
-	add_subdirectory(libvis/third_party/gtest)
-	set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
-	if(MSVC)
-	  if (MSVC_VERSION GREATER_EQUAL 1900)
-		target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-		target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-	  endif()
+  # GTest (packaged)
+  add_subdirectory(libvis/third_party/gtest)
+  set_target_properties(gtest gtest_main PROPERTIES FOLDER "libvis/third_party")
+  if(MSVC)
+    if (MSVC_VERSION GREATER_EQUAL 1900)
+      target_compile_definitions(gtest PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+      target_compile_definitions(gtest_main PUBLIC _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
 	endif()
+  endif()
 endif()
 enable_testing()
 
 find_package(PNG REQUIRED)
 if(PNG_FOUND)
-	message( "libpng_FOUND:    " ${PNG_FOUND} )
-	message( "PNG_LIBRARIES:   " ${PNG_LIBRARIES})
-	message( "PNG_LIBRARY:     " ${PNG_LIBRARY})
-	message( "PNG_INCLUDE_DIRS:" ${PNG_INCLUDE_DIRS})
+  message( "libpng_FOUND:    " ${PNG_FOUND} )
+  message( "PNG_LIBRARIES:   " ${PNG_LIBRARIES})
+  message( "PNG_LIBRARY:     " ${PNG_LIBRARY})
+  message( "PNG_INCLUDE_DIRS:" ${PNG_INCLUDE_DIRS})
 endif()
 
 find_package(tinyxml2 REQUIRED)
 message( "TinyXML2_FOUND:       " ${tinyxml2_FOUND} )
 message( "TINYXML2_FOUND:       " ${TINYXML2_FOUND} )
 if(TINYXML2_FOUND)
-	message( "TinyXML2_LIBRARIES:   " ${TINYXML2_LIBRARIES})
-	message( "TinyXML2_LIBRARY:     " ${TINYXML2_LIBRARY})
-	message( "TinyXML2_INCLUDE_DIRS:" ${TINYXML2_INCLUDE_DIRS})
+  message( "TinyXML2_LIBRARIES:   " ${TINYXML2_LIBRARIES})
+  message( "TinyXML2_LIBRARY:     " ${TINYXML2_LIBRARY})
+  message( "TinyXML2_INCLUDE_DIRS:" ${TINYXML2_INCLUDE_DIRS})
 endif()
 
 if(NOT PNG_FOUND)
